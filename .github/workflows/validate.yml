@@ -1,13 +1,38 @@
-- name: Build Docker Image
-  run: |
-    docker build -t probe-sandbox ./server
+name: Docker Validation Runner
 
-- name: Run Docker Validation
-  run: |
-    RESULT=$(docker run --rm probe-sandbox "${{ github.event.inputs.code }}")
+on:
+  workflow_dispatch:
+    inputs:
+      code:
+        description: "Code input for validation"
+        required: true
+        type: string
 
-    echo "Result: $RESULT"
+jobs:
+  validate:
+    runs-on: ubuntu-latest
 
-    curl -X POST https://https://probe-backend-ulu3.onrender.com//store-result \
-      -H "Content-Type: application/json" \
-      -d "{\"code\":\"${{ github.event.inputs.code}}\",\"result\":\"$RESULT\"}"
+    steps:
+      # Checkout repository
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      # Build Docker image from server folder
+      - name: Build Docker Image
+        run: |
+          docker build -t probe-sandbox ./server
+
+      # Run validation inside container
+      - name: Run Docker Validation
+        run: |
+          RESULT=$(docker run --rm probe-sandbox "${{ github.event.inputs.code }}")
+
+          echo "Validation Result:"
+          echo "$RESULT"
+
+      # Send result to backend (UPDATE YOUR URL)
+      - name: Send Result to Backend
+        run: |
+          curl -X POST "https://YOUR_BACKEND_URL/store-result" \
+            -H "Content-Type: application/json" \
+            -d "{\"code\":\"${{ github.event.inputs.code }}\",\"result\":\"$RESULT\"}"
