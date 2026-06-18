@@ -12,6 +12,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Setup Node (stable fix)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
       - name: Checkout repo
         uses: actions/checkout@v4
 
@@ -25,6 +30,6 @@ jobs:
 
           echo "Result: $RESULT"
 
-          curl -X POST https://YOUR_BACKEND_URL/store-result \
+          curl -X POST https://https://probe-backend-ulu3.onrender.com//store-result \
             -H "Content-Type: application/json" \
             -d "{\"code\":\"${{ github.event.inputs.code}}\",\"result\":\"$RESULT\"}"
